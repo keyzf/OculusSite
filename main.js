@@ -39,7 +39,7 @@ wss.on('connection', socket => {
     } catch (error) {
       console.error('Error capturing screen:', error);
     }
-  }, 1000 / 30);
+  }, 1000 / 90);
 
   // Listen for socket close events
   socket.on('close', () => {

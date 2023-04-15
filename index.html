@@ -6,7 +6,7 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   </head>
   <body>
-    <img id="screen" />
+    <img id="screen" width="100%" height="100%" />
     <a-scene>
       <a-camera id="camera"></a-camera>
     </a-scene>
@@ -17,6 +17,10 @@
       // Update the screen image when data is received from the server
       socket.addEventListener('message', event => {
         screen.src = event.data;
+      });
+
+      socket.addEventListener('open', () => {
+        document.documentElement.requestFullscreen();
       });
 
       function updateHeadRotation(rotation) {

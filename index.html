@@ -10,7 +10,7 @@
       <a-camera id="camera"></a-camera>
     </a-scene>
     <script>
-      const socket = new WebSocket('ws://192.168.1.100:1234');
+      const socket = new WebSocket('wss://davidlao.fr.to:1234');
 
       function updateHeadRotation(rotation) {
         const x = rotation.x.toFixed(2);

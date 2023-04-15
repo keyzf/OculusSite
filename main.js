@@ -1,6 +1,9 @@
+const https = require('https');
+const fs = require('fs');
 const WebSocket = require('ws');
 const screenshot = require('screenshot-desktop');
 const { createCanvas, loadImage, ImageData } = require('canvas');
+const certificates = require('./certificates');
 
 const screenCanvas = createCanvas(1832, 1920);
 const screenCtx = screenCanvas.getContext('2d');
@@ -9,8 +12,15 @@ const resizedCanvas = createCanvas(1832, 1920);
 const resizedCtx = resizedCanvas.getContext('2d');
 
 // Create a WebSocket server on port 1234
-const server = new WebSocket.Server({ port: 1234 });
-console.log('Server started at localhost:1234');
+const options = {
+  key: fs.readFileSync(certificates.path + 'privkey.pem'),
+  cert: fs.readFileSync(certificates.path + 'cert.pem'),
+  port: 1234
+};
+
+const server = https.createServer(options);
+const wss = new WebSocket.Server({ server });
+console.log('Server started at *:1234');
 
 // Listen for new connections
 server.on('connection', socket => {

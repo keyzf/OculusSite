@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "screenshot-desktop": "^0.0.0-development",
+    "ws": "^8.13.0"
+  }
+}

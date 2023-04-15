@@ -1,23 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Screen Stream Client</title>
+  <meta charset="utf-8">
+  <title>Screen Capture</title>
+  <script src="https://cdn.jsdelivr.net/npm/pako/dist/pako.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-  <img id="screen" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/zlib.js/0.2.11/zlib.min.js">
-    const screen = document.getElementById('screen');
-    const socket = new WebSocket('wss://192.168.1.100:1234');
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-    socket.onmessage = (event) => {
-      // Decompress the received data with zlib
-      const decompressedData = zlib.inflateSync(event.data);
+    let imageData;
+    let dataChunks = [];
+    let expectedLength = 0;
 
-      // Create a blob from the decompressed data and set it as the image source
-      const blob = new Blob([decompressedData], {type: 'image/jpeg'});
-      screen.src = URL.createObjectURL(blob);
-    };
+    const socket = new WebSocket('wss://davidlao.fr.to:1234');
+    socket.binaryType = 'arraybuffer';
+
+    socket.addEventListener('message', (event) => {
+      const data = event.data;
+      const uncompressedData = pako.inflate(data);
+      const imageDataArray = new Uint8ClampedArray(uncompressedData);
+
+      imageData = new ImageData(imageDataArray, 1920*0.7, 1080*0.7);
+      resizeCanvas(imageData.width, imageData.height);
+      ctx.putImageData(imageData, 0, 0, 0, 0, imageData.width, imageData.height);
+    });
   </script>
 </body>
 </html>

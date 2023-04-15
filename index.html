@@ -6,11 +6,18 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   </head>
   <body>
+    <img id="screen" />
     <a-scene>
       <a-camera id="camera"></a-camera>
     </a-scene>
     <script>
       const socket = new WebSocket('wss://davidlao.fr.to:1234');
+      const screen = document.getElementById('screen');
+
+      // Update the screen image when data is received from the server
+      socket.addEventListener('message', event => {
+        screen.src = event.data;
+      });
 
       function updateHeadRotation(rotation) {
         const x = rotation.x.toFixed(2);

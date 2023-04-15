@@ -11,19 +11,16 @@ const screenCtx = screenCanvas.getContext('2d');
 const resizedCanvas = createCanvas(1832, 1920);
 const resizedCtx = resizedCanvas.getContext('2d');
 
-// Create a WebSocket server on port 1234
 const options = {
   key: fs.readFileSync(CertPath + 'privkey.pem'),
-  cert: fs.readFileSync(CertPath + 'cert.pem'),
-  port: 1234
+  cert: fs.readFileSync(CertPath + 'cert.pem')
 };
 
 const server = https.createServer(options);
-const wss = new WebSocket.Server({ server });
-console.log('Server started at *:1234');
+const wss = new WebSocket.Server({ noServer: true });
 
-// Listen for new connections
-server.on('connection', socket => {
+// Listen for WebSocket connections
+wss.on('connection', socket => {
   console.log('Client connected');
 
   // Capture the screen and send images to the client at 30fps
@@ -40,7 +37,7 @@ server.on('connection', socket => {
       const resizedImageData = resizedCanvas.toDataURL('image/png');
       socket.send(resizedImageData);
     } catch (error) {
-      //console.error('Error capturing screen:', error);
+      console.error('Error capturing screen:', error);
     }
   }, 1000 / 30);
 
@@ -48,4 +45,15 @@ server.on('connection', socket => {
   socket.on('close', () => {
     console.log('Client disconnected');
   });
+});
+
+// Handle WebSocket upgrade requests
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, socket => {
+    wss.emit('connection', socket, request);
+  });
+});
+
+server.listen(1234, () => {
+  console.log('Server started at *:1234');
 });

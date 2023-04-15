@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/zlib.js/0.2.11/zlib.min.js"></script>
   <script>
     const screen = document.getElementById('screen');
-    const socket = new WebSocket('wss://localhost:1234');
+    const socket = new WebSocket('wss://192.168.1.100:1234');
 
     socket.onmessage = (event) => {
       // Decompress the received data with zlib

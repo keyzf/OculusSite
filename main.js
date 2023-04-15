@@ -2,9 +2,8 @@ const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const robot = require('robotjs');
-const { createCanvas, loadImage } = require('canvas');
-const { CertPath } = require('./certificates');
 const zlib = require('zlib');
+const { CertPath } = require('./certificates');
 
 const resMul = 1;
 const width = 1832 * resMul;
@@ -32,11 +31,11 @@ wss.on('connection', async (socket) => {
       // Capture the screen image
       const bitmap = await robot.screen.capture(0, 0, robot.screen.width, robot.screen.height);
 
-      // Create a compressed buffer of the bitmap data using zlib
-      const compressedBitmap = zlib.deflateSync(bitmap.image.buffer);
+      // Compress the image data with zlib
+      const compressedData = zlib.deflateSync(bitmap.image.buffer);
 
-      // Send the compressed bitmap data to the client
-      socket.send(compressedBitmap);
+      // Send the compressed image data to the client
+      socket.send(compressedData);
     } catch (error) {
       console.error('Error capturing screen:', error);
     }

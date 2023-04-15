@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Screen Capture</title>
-  </head>
-  <body>
-    <img id="screenshot" src="#" alt="Screen capture">
-    <script src="https://cdn.jsdelivr.net/npm/pako/dist/pako.min.js"></script>
-    <script>
-      const screenshot = document.getElementById('screenshot');
-      const socket = new WebSocket('wss://davidlao.fr.to:1234');
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Screen Stream Client</title>
+</head>
+<body>
+  <img id="screen" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zlib.js/0.2.11/zlib.min.js"></script>
+  <script>
+    const screen = document.getElementById('screen');
+    const socket = new WebSocket('wss://localhost:1234');
 
-      socket.addEventListener('message', event => {
-        // Decompress the received data using zlib
-        const compressedData = event.data;
-        const uncompressedData = zlib.inflateSync(compressedData);
+    socket.onmessage = (event) => {
+      // Decompress the received data with zlib
+      const decompressedData = zlib.inflateSync(event.data);
 
-        // Convert the uncompressed data to a data URL and set it as the image source
-        const dataURL = 'data:image/jpeg;base64,' + btoa(String.fromCharCode.apply(null, uncompressedData));
-        screenshot.src = dataURL;
-      });
-    </script>
-  </body>
+      // Create a blob from the decompressed data and set it as the image source
+      const blob = new Blob([decompressedData], {type: 'image/jpeg'});
+      screen.src = URL.createObjectURL(blob);
+    };
+  </script>
+</body>
 </html>

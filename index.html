@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/pako/dist/pako.min.js"></script>
     <script>
       const screenshot = document.getElementById('screenshot');
-      const socket = new WebSocket('wss://localhost:1234');
+      const socket = new WebSocket('wss://davidlao.fr.to:1234');
 
       socket.addEventListener('message', event => {
         // Decompress the received data using zlib

@@ -7,24 +7,22 @@
 <body>
   <img id="screen" src="" width="1832" height="1920">
   <script>
-    const socket = new WebSocket('wss://localhost:1234');
-    const screen = document.getElementById('screen');
+    const ws = new WebSocket('wss://localhost:1234');
 
-    socket.onopen = function(event) {
-      console.log('WebSocket connection opened');
-    };
+    ws.binaryType = 'arraybuffer';
 
-    socket.onmessage = function(event) {
-      const imageData = event.data;
-      screen.src = imageData;
-    };
+    ws.onmessage = (event) => {
+      // Decompress the received data using zlib
+      const bitmapData = zlib.inflateSync(new Uint8Array(event.data));
 
-    socket.onerror = function(error) {
-      console.error('WebSocket error:', error);
-    };
+      // Convert the bitmap data to an HTMLImageElement
+      const image = new Image();
+      image.src = 'data:image/jpeg;base64,' + btoa(String.fromCharCode.apply(null, bitmapData));
 
-    socket.onclose = function(event) {
-      console.log('WebSocket connection closed');
+      // Draw the image to the canvas
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0);
     };
   </script>
 </body>

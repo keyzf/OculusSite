@@ -1,29 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Screen Sharing Client</title>
-</head>
-<body>
-  <img id="screen" src="" width="1832" height="1920">
-  <script>
-    const ws = new WebSocket('wss://localhost:1234');
+  <head>
+    <meta charset="UTF-8">
+    <title>Screen Capture</title>
+  </head>
+  <body>
+    <img id="screenshot" src="#" alt="Screen capture">
+    <script src="https://cdn.jsdelivr.net/npm/pako/dist/pako.min.js"></script>
+    <script>
+      const screenshot = document.getElementById('screenshot');
+      const socket = new WebSocket('wss://localhost:1234');
 
-    ws.binaryType = 'arraybuffer';
+      socket.addEventListener('message', event => {
+        // Decompress the received data using zlib
+        const compressedData = event.data;
+        const uncompressedData = zlib.inflateSync(compressedData);
 
-    ws.onmessage = (event) => {
-      // Decompress the received data using zlib
-      const bitmapData = zlib.inflateSync(new Uint8Array(event.data));
-
-      // Convert the bitmap data to an HTMLImageElement
-      const image = new Image();
-      image.src = 'data:image/jpeg;base64,' + btoa(String.fromCharCode.apply(null, bitmapData));
-
-      // Draw the image to the canvas
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(image, 0, 0);
-    };
-  </script>
-</body>
+        // Convert the uncompressed data to a data URL and set it as the image source
+        const dataURL = 'data:image/jpeg;base64,' + btoa(String.fromCharCode.apply(null, uncompressedData));
+        screenshot.src = dataURL;
+      });
+    </script>
+  </body>
 </html>

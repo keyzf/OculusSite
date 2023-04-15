@@ -2,8 +2,9 @@ const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
 const robot = require('robotjs');
-const zlib = require('zlib');
+const { createCanvas, loadImage } = require('canvas');
 const { CertPath } = require('./certificates');
+const zlib = require('zlib');
 
 const resMul = 1;
 const width = 1832 * resMul;
@@ -15,7 +16,7 @@ const options = {
 };
 
 const server = https.createServer(options);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ noServer: true });
 
 // Listen for WebSocket connections
 wss.on('connection', async (socket) => {
@@ -31,16 +32,11 @@ wss.on('connection', async (socket) => {
       // Capture the screen image
       const bitmap = await robot.screen.capture(0, 0, robot.screen.width, robot.screen.height);
 
-      // Compress the bitmap using zlib
-      const compressed = await new Promise((resolve, reject) => {
-        zlib.deflate(bitmap.image.buffer, (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        });
-      });
+      // Create a compressed buffer of the bitmap data using zlib
+      const compressedBitmap = zlib.deflateSync(bitmap.image.buffer);
 
-      // Send the compressed bitmap to the client
-      socket.send(compressed);
+      // Send the compressed bitmap data to the client
+      socket.send(compressedBitmap);
     } catch (error) {
       console.error('Error capturing screen:', error);
     }
@@ -53,6 +49,13 @@ wss.on('connection', async (socket) => {
   }
 
   console.log('Client disconnected');
+});
+
+// Handle WebSocket upgrade requests
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, socket => {
+    wss.emit('connection', socket, request);
+  });
 });
 
 server.listen(1234, () => {

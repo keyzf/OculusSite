@@ -1,2 +1,2 @@
-const path = 'C:/Certbot/live/davidlao.fr.to/';
-module.exports = path;
+const CertPath = 'C:/Certbot/live/davidlao.fr.to/';
+module.exports = {CertPath};

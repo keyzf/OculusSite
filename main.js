@@ -3,7 +3,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 const screenshot = require('screenshot-desktop');
 const { createCanvas, loadImage, ImageData } = require('canvas');
-const certificates = require('./certificates');
+const { CertPath } = require('./certificates');
 
 const screenCanvas = createCanvas(1832, 1920);
 const screenCtx = screenCanvas.getContext('2d');
@@ -13,8 +13,8 @@ const resizedCtx = resizedCanvas.getContext('2d');
 
 // Create a WebSocket server on port 1234
 const options = {
-  key: fs.readFileSync(certificates.path + 'privkey.pem'),
-  cert: fs.readFileSync(certificates.path + 'cert.pem'),
+  key: fs.readFileSync(CertPath + 'privkey.pem'),
+  cert: fs.readFileSync(CertPath + 'cert.pem'),
   port: 1234
 };
 

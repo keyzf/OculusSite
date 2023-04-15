@@ -1,7 +1,10 @@
 {
   "dependencies": {
     "canvas": "^2.11.2",
+    "lz4": "^0.6.5",
+    "robotjs": "^0.6.0",
     "screenshot-desktop": "^0.0.0-development",
+    "sharp": "^0.32.0",
     "ws": "^8.13.0"
   }
 }

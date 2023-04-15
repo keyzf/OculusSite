@@ -1,15 +1,13 @@
 const https = require('https');
 const fs = require('fs');
 const WebSocket = require('ws');
-const screenshot = require('screenshot-desktop');
-const { createCanvas, loadImage, ImageData } = require('canvas');
+const robot = require('robotjs');
+const zlib = require('zlib');
 const { CertPath } = require('./certificates');
 
-const screenCanvas = createCanvas(1832, 1920);
-const screenCtx = screenCanvas.getContext('2d');
-
-const resizedCanvas = createCanvas(1832, 1920);
-const resizedCtx = resizedCanvas.getContext('2d');
+const resMul = 1;
+const width = 1832 * resMul;
+const height = 1920 * resMul;
 
 const options = {
   key: fs.readFileSync(CertPath + 'privkey.pem'),
@@ -17,41 +15,44 @@ const options = {
 };
 
 const server = https.createServer(options);
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({ server });
 
 // Listen for WebSocket connections
-wss.on('connection', socket => {
+wss.on('connection', async (socket) => {
   console.log('Client connected');
 
-  // Capture the screen and send images to the client at 30fps
+  // Capture the screen and send images to the client at 75fps
+  const captureInterval = 1000 / 75;
 
-  setInterval(async () => {
+  while (socket.readyState === WebSocket.OPEN) {
+    const captureStart = Date.now();
+
     try {
-      // Capture the screen image and draw it to the screen canvas
-      const imageData = await screenshot({format: 'png'});
+      // Capture the screen image
+      const bitmap = await robot.screen.capture(0, 0, robot.screen.width, robot.screen.height);
 
-      // Resize the screen image and draw it to the resized canvas
-      resizedCtx.drawImage(await loadImage(imageData), 0, 0, 1832, 1920);
+      // Compress the bitmap using zlib
+      const compressed = await new Promise((resolve, reject) => {
+        zlib.deflate(bitmap.image.buffer, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+      });
 
-      // Convert the resized canvas to a PNG image and send it to the client
-      const resizedImageData = resizedCanvas.toDataURL('image/png');
-      socket.send(resizedImageData);
+      // Send the compressed bitmap to the client
+      socket.send(compressed);
     } catch (error) {
       console.error('Error capturing screen:', error);
     }
-  }, 1000 / 90);
 
-  // Listen for socket close events
-  socket.on('close', () => {
-    console.log('Client disconnected');
-  });
-});
+    // Calculate the time it took to capture the screen
+    const captureDuration = Date.now() - captureStart;
 
-// Handle WebSocket upgrade requests
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, socket => {
-    wss.emit('connection', socket, request);
-  });
+    // Wait the remaining time in the capture interval
+    await new Promise(resolve => setTimeout(resolve, captureInterval - captureDuration));
+  }
+
+  console.log('Client disconnected');
 });
 
 server.listen(1234, () => {
